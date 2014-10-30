@@ -13,8 +13,8 @@ Template.ALIGN = (function () {
 
 	var positions={
  "menu.help_button": {
-  "x": 336.027774810791,
-  "y": 447.0138854980469,
+  "x": 80,
+  "y": 278,
   "width": 260,
   "height": 104
  },
@@ -25,15 +25,15 @@ Template.ALIGN = (function () {
   "height": 104
  },
  "menu.options_button": {
-  "x": 51.527774810791016,
-  "y": 449.0138854980469,
-  "width": 265,
+  "x": 600,
+  "y": 98,
+  "width": 220,
   "height": 104
  },
  "menu.play_button": {
-  "x": 274.027774810791,
-  "y": 257.0138854980469,
-  "width": 385.99999999999994,
+  "x": 74,
+  "y": 477,
+  "width": 100,
   "height": 152
  },
  "undefined": {
@@ -192,6 +192,12 @@ Template.ALIGN = (function () {
   "y": 266.72222222222223,
   "width": 156.11111111111111,
   "height": 30.55555555555556
+ },
+ "menu.buy_button": {
+  "x": 650,
+  "y": 261,
+  "width": 208,
+  "height": 83
  }
 };
 

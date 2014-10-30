@@ -20,25 +20,28 @@
 
     var dataDiv = document.createElement("div");
     dataDiv.style.width="300px";
-    dataDiv.style.overflow = "scroll";
+    dataDiv.style.position='fixed';
+    dataDiv.style.top= '350px';
     dataDiv.setAttribute('id','editorPrint');
 
     var infoDiv = document.createElement("div");
     infoDiv.style.position='fixed';
     infoDiv.style.top='10px';
     infoDiv.style.width="200px";
-    infoDiv.style.height="200px";
+    infoDiv.style.height="300px";
     infoDiv.style.overflow = "scroll";
     infoDiv.setAttribute('id','info');
     infoDiv.innerHTML=''+
    
-    'x: <input id="entityX" type="text" name="fname"><br>'
-    +'y: <input id="entityY" type="text" name="lname"><br>'
-    +'width: <input id="entityWidth" type="text" name="lname"><br>'
-    +'height: <input id="entitHeight" type="text" name="lname"><br>'
+    'X: <input id="entityX" type="text" name="fname"><br>'
+    +'Y: <input id="entityY" type="text" name="lname"><br>'
+    +'Width: <input id="entityWidth" type="text" name="lname"><br>'
+    +'Height: <input id="entityHeight" type="text" name="lname"><br>'
+    +'Leader: <input id="entityLeader" type="text" readonly="readonly"  name="lname"><br>'
     +'<button id="saveData">OK</button>';
     
-
+   infoDiv.style.display='none';
+   dataDiv.style.display='none';
 
 
 
@@ -50,7 +53,9 @@
             document.body.appendChild(infoDiv);
             document.body.appendChild(dataDiv);
 
-            document.getElementById('saveData').onclick = this.save.bind(this)
+            document.getElementById('saveData').onclick = this.save.bind(this,true);
+     
+
            
 
             this.game=game;
@@ -71,71 +76,54 @@
         pressed: function () {
 
         if (!Template.CONFIG.EDITOR ) return
-        if(this.game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) active=!active;
+        if(this.game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) this.toggle();
         if(!active)return;
         
-        if(this.game.input.keyboard.isDown(Phaser.Keyboard.P)) print();
+        if(this.game.input.keyboard.isDown(Phaser.Keyboard.P)) this.print();
          
-        if(!this.game.input.keyboard.isDown(Phaser.Keyboard.CONTROL))return;
+        if(this.game.input.keyboard.isDown(Phaser.Keyboard.CONTROL))this.find();
 
-        if(this.selectedEntity===null)this.find();
-        if(this.selectedEntity===null)return;
-
-
-        if (   this.game.input.keyboard.isDown(37) 
-            || this.game.input.keyboard.isDown(38)
-            || this.game.input.keyboard.isDown(39)
-            || this.game.input.keyboard.isDown(40))
-        {
-            this.arrowMoving=true;
-            this.move(this.selectedEntity);
-
-        }
-
+        if(this.game.input.keyboard.isDown(Phaser.Keyboard.ESC))this.reset();
+        
 
 
 
     },
+
 
     released:function(){
             
-            if(this.game.input.keyboard.justReleased(17))this.save();
+           if(this.game.input.keyboard.justReleased(17)){
+            this.save();
+            if(this.selectedEntity!==null)this.selectedEntity.dragged=false;
+           }
 
 
     },
 
-    save: function(){
 
-            if(this.selectedEntity===null)return;
+    toggle:function(){
+        active=!active;
+
+        if(active){
+            console.log('q')
+            infoDiv.style.display='block';
+            dataDiv.style.display='block';
+        }else{
+            console.log('asd')
+            infoDiv.style.display='none';
+             dataDiv.style.display='none';
+        }
+    },
+
     
-            if(typeof EDITOR_DATA[this.selectedEntity.label]==='undefined')EDITOR_DATA[this.selectedEntity.label]={};
-
-            EDITOR_DATA[this.selectedEntity.label].x=this.selectedEntity.x;
-
-            EDITOR_DATA[this.selectedEntity.label].y=this.selectedEntity.y;
-
-            EDITOR_DATA[this.selectedEntity.label].width=this.selectedEntity.width;
-
-            EDITOR_DATA[this.selectedEntity.label].height=this.selectedEntity.height;
-
-
-            this.selectedEntity.startX= this.selectedEntity.x;
-            this.selectedEntity.startY= this.selectedEntity.y;
-            this.selectedEntity.update=function(){};
-            this.selectedEntity=null;
-            this.arrowMoving=false;
-            
-          
-
-
-
-    },
 
 
     find:function(){
 
 
-        this.selectedEntity=null;
+       this.save();
+        // this.selectedEntity = null;
        
 
         this.game.world.children.forEach(
@@ -162,20 +150,31 @@
         if(this.selectedEntity!==null){
             
             this.selectedEntity.update=function(self){
+
                 if(this.arrowMoving)return;  
-                 if ( typeof self.anchor !=='undefined' && self.anchor.x ==0.5) {
-                
-                     self.x=this.game.input.activePointer.x;
-                     self.y=this.game.input.activePointer.y;
+                if(self.dragged){
+                     if ( typeof self.anchor !=='undefined' && self.anchor.x ==0.5) {
+                    
+                         self.x=this.game.input.activePointer.x;
+                         self.y=this.game.input.activePointer.y;
+                    }
+                    else{
+
+                        self.x=this.game.input.activePointer.x-self.width/2;
+
+                        self.y=this.game.input.activePointer.y-self.height/2;
+
+
+
+                     }
+                 this.updateTextFields()
+
                 }else{
-
-                    self.x=this.game.input.activePointer.x-self.width/2;
-
-                    self.y=this.game.input.activePointer.y-self.height/2;
+                   this.getValuesFromTextFields()
+                }
 
 
-                 }
-            
+
             }.bind(this,this.selectedEntity)
 
 
@@ -208,8 +207,27 @@
                         this.rect.height = entity.height;
 
                         if (Phaser.Rectangle.contains(this.rect, this.game.input.x, this.game.input.y)) {
-                           
-                            this.selectedEntity=entity;
+                            
+                            this.resetSelectedEntity();
+                            this.selectedEntity=entity;             
+                            this.selectedEntity.dragged = true;
+
+                            if(typeof this.selectedEntity.initX ==='undefined'){
+
+                                this.selectedEntity.initX = this.selectedEntity.x;
+                                this.selectedEntity.initY = this.selectedEntity.y;
+                                this.selectedEntity.initWidth = this.selectedEntity.width;
+                                this.selectedEntity.initHeight = this.selectedEntity.height;
+
+                            }
+                        
+                            if(this.selectedEntity.label.indexOf('.LEADER')!=-1){
+                                 document.getElementById('entityLeader').value = 'TRUE';
+
+                            }else{
+                                 document.getElementById('entityLeader').value = 'FALSE';
+
+                            }
 
 
                         }
@@ -218,15 +236,124 @@
 
 },
 
+save: function(clear){
 
-    move:function(entity){
+            if(this.selectedEntity===null)return;
+            console.log('saving')
+    
+            if(typeof EDITOR_DATA[this.selectedEntity.label]==='undefined')EDITOR_DATA[this.selectedEntity.label]={};
 
-           if(this.game.input.keyboard.isDown(37))entity.x--;    
-           if(this.game.input.keyboard.isDown(39))entity.x++;    
-           if(this.game.input.keyboard.isDown(38))entity.y--;    
-           if(this.game.input.keyboard.isDown(40))entity.y++;    
-       
+            EDITOR_DATA[this.selectedEntity.label].x=this.selectedEntity.x;
 
+            EDITOR_DATA[this.selectedEntity.label].y=this.selectedEntity.y;
+
+            EDITOR_DATA[this.selectedEntity.label].width=this.selectedEntity.width;
+
+            EDITOR_DATA[this.selectedEntity.label].height=this.selectedEntity.height;
+
+
+            this.selectedEntity.startX= this.selectedEntity.x;
+            this.selectedEntity.startY= this.selectedEntity.y;
+            this.selectedEntity.startWidth= this.selectedEntity.width;
+            this.selectedEntity.startHeight= this.selectedEntity.height;
+
+            if(clear===true)this.resetSelectedEntity();
+            
+    },
+
+    reset: function(){
+
+        if(this.selectedEntity===null)return;
+        console.log('reset')
+        console.log(this.selectedEntity.initX)
+
+        this.selectedEntity.x = this.selectedEntity.initX;
+        this.selectedEntity.y = this.selectedEntity.initY;
+
+        if(this.selectedEntity instanceof Phaser.BitmapText){
+            this.updateTextFields();
+            return;
+        }
+
+        this.selectedEntity.width = this.selectedEntity.initWidth;
+        this.selectedEntity.height = this.selectedEntity.initHeight;
+        this.updateTextFields();
+
+
+
+
+
+
+    },
+
+
+    
+
+
+    updateTextFields:function(){
+
+        document.getElementById('entityX').value=this.selectedEntity.x;
+        document.getElementById('entityY').value=this.selectedEntity.y;
+
+        if(this.selectedEntity instanceof Phaser.BitmapText)return
+
+        document.getElementById('entityWidth').value=this.selectedEntity.width;
+        document.getElementById('entityHeight').value=this.selectedEntity.height;
+
+
+
+    },
+
+    getValuesFromTextFields:function(){
+
+        var x = document.getElementById('entityX').value;
+        if(isNaN(x))x=0;
+
+        var y = document.getElementById('entityY').value;
+        if(isNaN(y))y=0;
+
+            
+        this.selectedEntity.x = parseInt(x);
+        this.selectedEntity.y = parseInt(y);
+
+        if(this.selectedEntity instanceof Phaser.BitmapText)return
+         
+        var width = document.getElementById('entityWidth').value;
+        if(isNaN(width))width=0;
+
+        var height = document.getElementById('entityHeight').value;
+        if(isNaN(height))height=0;
+
+        this.selectedEntity.width = parseInt(width);
+        this.selectedEntity.height = parseInt(height);
+
+    },
+
+
+    resetSelectedEntity:function(){
+
+        if(this.selectedEntity!==null){
+            this.selectedEntity.update=function(){};
+            this.selectedEntity= null;
+
+        }
+    },
+
+
+    print: function(){
+
+        this.save();
+        this.resetSelectedEntity();
+
+        var currentDate = new Date(); 
+        var dateTime = "" 
+                + currentDate.getHours() + ":"  
+                + currentDate.getMinutes() + ":" 
+                + currentDate.getSeconds();
+
+        var editor_tag=document.getElementById('editorPrint');
+          
+            editor_tag.innerHTML="LastSave at: " + dateTime+ "<br>Copy bellow <br> <textarea style=\"height:200px\" onclick='this.focus();this.select()'>"+JSON.stringify(EDITOR_DATA,null ," ")+"</textarea>" 
 
     },
 
@@ -235,23 +362,8 @@
         return active;
     },
 
-    
-     
 
-
-
-
-    };
-
-
-    function print(){
-
-        var editor_tag=document.getElementById('editorPrint');
-          
-            editor_tag.innerHTML="<pre>"+JSON.stringify(EDITOR_DATA,null ," ")+"</pre>" 
-
-    };
-
+  };
 
 
 })();

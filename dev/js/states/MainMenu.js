@@ -57,7 +57,6 @@ Template.States.MainMenu.prototype = {
 
                 entity.scale=0.8;
                 entity.create(100,100,null, this.openFullLink, 'Buy\nFull version', 70, 10, 50).label='menu.buy_button';
-                console.log("LITELITELITELITE")
             };
 
 

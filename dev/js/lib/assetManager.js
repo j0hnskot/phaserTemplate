@@ -117,7 +117,7 @@ Template.ASSETS = (function () {
         console.log("Loading : " +key);
         if(typeof selectedAssets.sounds[key].data!=='undefined'){
 
-          console.log('is audiosprite.')
+          console.log('It\'s audiosprite.')
            this.game.load.audiosprite(key,'assets/sound/'+selectedAssets.sounds[key].file,'assets/sound/'+selectedAssets.sounds[key].data)
 
 
@@ -158,14 +158,10 @@ Template.ASSETS = (function () {
 
         if(typeof selectedAssets.images[key] !== 'undefined' || this.game.cache.checkImageKey(key)){
 
-            console.log(key+' texture not in atlas');
             entity.loadTexture(key);
-
         }else{
-          console.log(key+' texture in atlas');
+
           entity.frameName=key+'.png';
-
-
         }
 
 

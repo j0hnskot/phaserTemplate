@@ -40,7 +40,7 @@ Template.screens.levelSelection = (function () {
             this.background.visible = false;
             
             this.buttons = this.game.add.group();
-
+            this.firstButton = null ;
 
             entity.setDefault();
             entity.animation = false;
@@ -62,6 +62,9 @@ Template.screens.levelSelection = (function () {
                 button = entity.create(0, 0,'level_button',function(){})
                 if(i==0){
                     button.label='levelSelection.levelButton.LEADER';
+                    Template.ALIGN.force(button);
+                    this.firstButton=button;
+
                 }else{
                     button.label='.X';
                 }
@@ -161,7 +164,7 @@ Template.screens.levelSelection = (function () {
 
             entity.overrideState = this;
             entity.group = this.buttons;
-            this.back_button = entity.create(this.game.width - 275 , this.game.height - 110 , null,Template.screens.manager.hide.bind(this,'levelSelection'), 'Menu', 80, 10, 50)
+            this.back_button = entity.create(this.game.width - 275 , this.game.height - 110 , null,Template.screens.manager.hide.bind(this,'levelSelection'), 'Menu', 80, 10, 50).setLabel('levelSelection.menuButton')
 
             entity.setDefault();
 
@@ -195,7 +198,6 @@ Template.screens.levelSelection = (function () {
                     yDist = 132;
 
                 }
-
                     if (this.level > parseInt(Template.CURRENT_LEVEL) + 1) {
 
                         button.reset(xPos  + (xDist * (x - 1)) , (yPos + (yDist * (y - 1))) );
