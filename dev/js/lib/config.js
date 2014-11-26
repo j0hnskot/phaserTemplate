@@ -29,7 +29,7 @@ Template.CONFIG = (function () {
 			LITE = (typeof IS_LITE!=='undefined')?true:false,
 
 			URL = {
-	        android: "market://details?id=com.edstem.games.WordMetro",
+	        android: "",
 	        ios: null
 	    },
 
